@@ -50,6 +50,12 @@ app.post('/api/battle/start', (req, res) => {
         // Store battle in memory
         activeBattles.set(battleId, battle);
 
+        // Force both players to select their lead Pokemon to pass teampreview
+        // In @pkmn/sim, makeChoices() can auto-resolve if needed, but explicitly sending team 1 is safer
+        battle.choose('p1', 'team 1');
+        battle.choose('p2', 'team 1');
+        battle.makeChoices(); // Force the turn to resolve if it's waiting
+
         // Read the initial start log
         const log = battle.log.join('\n');
         battle.log = []; // Clear log for next fetch
