@@ -12,14 +12,6 @@ app.use(express.json());
 // Map: battleId (string) -> Battle instance
 const activeBattles = new Map();
 
-// --- WAKE-UP DAEMON ---
-// Render spins down free tier instances after 15 mins of inactivity.
-// This pings our own server every 14 minutes to keep it alive.
-const RENDER_URL = process.env.RENDER_EXTERNAL_URL || 'https://pokemon-battle-api-bj3y.onrender.com';
-setInterval(() => {
-    console.log('[Daemon] Pinging self to prevent sleep...');
-    fetch(RENDER_URL).catch(err => console.error('[Daemon] Ping failed:', err.message));
-}, 14 * 60 * 1000); // 14 minutes
 
 
 // Helper to generate a random battle ID
