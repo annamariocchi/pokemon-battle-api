@@ -54,10 +54,27 @@ app.post('/api/battle/start', (req, res) => {
         const log = battle.log.join('\n');
         battle.log = []; // Clear log for next fetch
 
+        // Extract basic state info
+        const state = {
+            p1Active: battle.p1.active[0] ? {
+                hp: battle.p1.active[0].hp,
+                maxhp: battle.p1.active[0].maxhp,
+                fainted: battle.p1.active[0].fainted
+            } : null,
+            p2Active: battle.p2.active[0] ? {
+                hp: battle.p2.active[0].hp,
+                maxhp: battle.p2.active[0].maxhp,
+                fainted: battle.p2.active[0].fainted
+            } : null,
+            ended: battle.ended,
+            winner: battle.winner
+        };
+
         res.json({
             success: true,
             battleId,
-            log: log
+            log: log,
+            state: state
         });
 
     } catch (e) {
