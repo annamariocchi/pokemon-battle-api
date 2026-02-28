@@ -1,0 +1,20 @@
+{
+  "name": "pokemon-battle-api",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "module",
+  "dependencies": {
+    "@pkmn/dex": "^0.10.6",
+    "@pkmn/sets": "^5.2.0",
+    "@pkmn/sim": "^0.10.6",
+    "cors": "^2.8.6",
+    "express": "^5.2.1"
+  }
+}
