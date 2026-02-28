@@ -68,10 +68,9 @@ app.post('/api/battle/start', (req, res) => {
         activeBattles.set(battleId, battle);
 
         // Force both players to select their lead Pokemon to pass teampreview
-        // In @pkmn/sim, makeChoices() can auto-resolve if needed, but explicitly sending team 1 is safer
         battle.choose('p1', 'team 1');
         battle.choose('p2', 'team 1');
-        battle.makeChoices(); // Force the turn to resolve if it's waiting
+        // Removed makeChoices() because it was auto-triggering turn 1 actions!
 
         // Read the initial start log
         const log = battle.log.join('\n');
@@ -82,12 +81,16 @@ app.post('/api/battle/start', (req, res) => {
             p1Active: battle.p1.active[0] ? {
                 hp: battle.p1.active[0].hp,
                 maxhp: battle.p1.active[0].maxhp,
-                fainted: battle.p1.active[0].fainted
+                fainted: battle.p1.active[0].fainted,
+                name: battle.p1.active[0].name,
+                ident: battle.p1.active[0].ident
             } : null,
             p2Active: battle.p2.active[0] ? {
                 hp: battle.p2.active[0].hp,
                 maxhp: battle.p2.active[0].maxhp,
-                fainted: battle.p2.active[0].fainted
+                fainted: battle.p2.active[0].fainted,
+                name: battle.p2.active[0].name,
+                ident: battle.p2.active[0].ident
             } : null,
             ended: battle.ended,
             winner: battle.winner
@@ -144,12 +147,16 @@ app.post('/api/battle/action', (req, res) => {
             p1Active: battle.p1.active[0] ? {
                 hp: battle.p1.active[0].hp,
                 maxhp: battle.p1.active[0].maxhp,
-                fainted: battle.p1.active[0].fainted
+                fainted: battle.p1.active[0].fainted,
+                name: battle.p1.active[0].name,
+                ident: battle.p1.active[0].ident
             } : null,
             p2Active: battle.p2.active[0] ? {
                 hp: battle.p2.active[0].hp,
                 maxhp: battle.p2.active[0].maxhp,
-                fainted: battle.p2.active[0].fainted
+                fainted: battle.p2.active[0].fainted,
+                name: battle.p2.active[0].name,
+                ident: battle.p2.active[0].ident
             } : null,
             ended: battle.ended,
             winner: battle.winner
