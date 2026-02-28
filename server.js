@@ -71,43 +71,35 @@ app.post('/api/battle/start', (req, res) => {
  */
 app.post('/api/battle/action', (req, res) => {
     try {
-        const { battleId, action, target } = req.body;
+        const { battleId, action } = req.body;
 
         if (!battleId || !activeBattles.has(battleId)) {
-            return res.status(404).json({ error: 'Battle not found or expired.' });
+            return res.status(404).json({ success: false, error: 'Battle not found or expired.' });
         }
 
         const battle = activeBattles.get(battleId);
 
         // 1) Apply Player's choice
-        // action might be: 'move 1', 'switch 2', or 'run'
-        let choiceStr = action;
-        if (target !== undefined) {
-            // For double battles / specific targeting
-            // choiceStr += ` ${target}`;
-        }
-
-        battle.choose('p1', choiceStr);
+        battle.choose('p1', action);
 
         // 2) Apply AI's choice (Automated Random Wild AI for now)
-        // If it's a wild encounter, p2 always just picks a random move.
-        // In reality we should check if it needs to switch or struggle.
-        let p2Choice = 'move 1';
-        const p2Mons = battle.p2.active;
-        if (p2Mons && p2Mons[0] && p2Mons[0].moveSlots.length > 0) {
-            const validMoves = p2Mons[0].moveSlots.map((m, idx) => idx + 1);
-            p2Choice = `move ${validMoves[Math.floor(Math.random() * validMoves.length)]}`;
+        let p2Choice = 'auto'; // Let sim auto-pick if possible
+        const p2Active = battle.p2.active[0];
+
+        if (p2Active && !p2Active.fainted) {
+            const validMoves = p2Active.moveSlots.map((m, idx) => idx + 1);
+            if (validMoves.length > 0) {
+                p2Choice = `move ${validMoves[Math.floor(Math.random() * validMoves.length)]}`;
+            }
         }
 
         battle.choose('p2', p2Choice);
 
-        // 3) Commit the choices (This actually executes the turn in pkmn/sim)
-        // Note: pkmn/sim automatically resolves the turn when both players have chosen.
-
+        // 3) Commit the choices
         const log = battle.log.join('\n');
         battle.log = []; // Clear log for the next turn
 
-        // Extract basic state info to help the frontend 
+        // Extract basic state info
         const state = {
             p1Active: battle.p1.active[0] ? {
                 hp: battle.p1.active[0].hp,
@@ -135,7 +127,7 @@ app.post('/api/battle/action', (req, res) => {
 
     } catch (e) {
         console.error("Action Error:", e);
-        res.status(500).json({ error: e.message });
+        res.status(500).json({ success: false, error: e.message });
     }
 });
 
