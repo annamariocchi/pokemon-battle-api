@@ -43,9 +43,26 @@ app.post('/api/battle/start', (req, res) => {
 
         const battleId = generateId();
 
+        // Sanitize teams to ensure required fields (like moves) exist
+        const sanitizeTeam = (team) => {
+            if (!Array.isArray(team)) return [];
+            return team.map(mon => {
+                const safeMon = { ...mon };
+                if (!safeMon.moves || !Array.isArray(safeMon.moves) || safeMon.moves.length === 0) {
+                    safeMon.moves = ['Tackle']; // Fallback
+                }
+                // Ensure moves are strings (IDs)
+                safeMon.moves = safeMon.moves.map(m => typeof m === 'string' ? m : m.name || m.id || 'tackle');
+                return safeMon;
+            });
+        };
+
+        const safeP1Team = sanitizeTeam(p1.team);
+        const safeP2Team = sanitizeTeam(p2.team);
+
         // Setup Players
-        battle.setPlayer('p1', { name: p1.name || 'Player', team: p1.team });
-        battle.setPlayer('p2', { name: p2.name || 'Wild Pokemon', team: p2.team });
+        battle.setPlayer('p1', { name: p1.name || 'Player', team: safeP1Team });
+        battle.setPlayer('p2', { name: p2.name || 'Wild Pokemon', team: safeP2Team });
 
         // Store battle in memory
         activeBattles.set(battleId, battle);
