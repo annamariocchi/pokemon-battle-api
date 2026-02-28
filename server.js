@@ -67,6 +67,28 @@ app.post('/api/battle/start', (req, res) => {
         // Store battle in memory
         activeBattles.set(battleId, battle);
 
+        // Apply persistence (P1_STATE) to the server-side simulation before locking in leads
+        if (req.body.p1State && Object.keys(req.body.p1State).length > 0) {
+            const p1State = req.body.p1State;
+            battle.p1.pokemon.forEach(mon => {
+                const key = mon.name || mon.species.name;
+                const searchKeys = [key, mon.species.name, key.toLowerCase(), mon.species.name.toLowerCase()];
+                const matchedKey = searchKeys.find(k => p1State[k]);
+                if (matchedKey) {
+                    const s = p1State[matchedKey];
+                    if (s.hp !== undefined) {
+                        mon.hp = Math.max(0, Math.min(s.hp, mon.maxhp));
+                        if (mon.hp === 0) {
+                            mon.faint();
+                        }
+                    }
+                    if (s.status && s.status !== 'fnt') {
+                        mon.setStatus(s.status);
+                    }
+                }
+            });
+        }
+
         // Force both players to select their lead Pokemon to pass teampreview
         battle.choose('p1', 'team 1');
         battle.choose('p2', 'team 1');
