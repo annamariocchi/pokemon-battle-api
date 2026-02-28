@@ -13,6 +13,33 @@ app.use(express.json());
 const activeBattles = new Map();
 
 
+// --- SCHEDULED WAKE-UP DAEMON (11:00 - 23:30 CET) ---
+// Save Render's 500 free monthly hours by letting the server sleep at night.
+const RENDER_URL = process.env.RENDER_EXTERNAL_URL || 'https://pokemon-battle-api-bj3y.onrender.com';
+
+setInterval(() => {
+    // Get current time in Italy (CET/CEST)
+    const now = new Date();
+    const romeTimeStr = now.toLocaleString("en-US", { timeZone: "Europe/Rome" });
+    const romeDate = new Date(romeTimeStr);
+
+    const hours = romeDate.getHours();
+    const minutes = romeDate.getMinutes();
+    const timeVal = hours + (minutes / 60);
+
+    // Business hours: 11:00 to 23:30
+    if (timeVal >= 11 && timeVal <= 23.5) {
+        console.log(`[Daemon] Active Time (${hours}:${minutes.toString().padStart(2, '0')} CET) - Pinging self...`);
+        fetch(RENDER_URL).catch(err => console.error('[Daemon] Ping failed:', err.message));
+    } else {
+        console.log(`[Daemon] Sleep Time (${hours}:${minutes.toString().padStart(2, '0')} CET) - Skipping ping.`);
+    }
+}, 14 * 60 * 1000); // Check every 14 minutes
+
+// Root endpoint just for pings
+app.get('/', (req, res) => {
+    res.status(200).send('API is awake');
+});
 
 // Helper to generate a random battle ID
 const generateId = () => Math.random().toString(36).substring(2, 10);
